@@ -1,34 +1,50 @@
-import { IsNotEmpty, Length } from 'class-validator';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  BeforeInsert,
+  BeforeUpdate,
+} from 'typeorm';
 import { UserRole } from 'src/common/user-role.enum';
-import { Column, CreateDateColumn, PrimaryGeneratedColumn } from 'typeorm';
 
+@Entity()
 export class User {
   @PrimaryGeneratedColumn()
-  @IsNotEmpty()
   id: number;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column()
   firstName: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column()
   lastName: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ unique: true })
   email: string;
 
-  @Column({ type: 'varchar', nullable: false, length: 100 })
+  @Column()
   password: string;
 
   @Column({
+    type: 'enum',
     enum: UserRole,
     default: UserRole.PATIENT,
-    nullable: false,
   })
-  role: string;
+  role: UserRole;
 
-  @Column({ nullable: true, type: 'varchar' })
-  phone?: string;
+  @Column({ nullable: false, unique: true })
+  phone: string;
+
+  @Column({ type: 'date', nullable: true })
+  dateOfBirth: Date;
+
+  @Column({ default: true })
+  isActive: boolean;
 
   @CreateDateColumn()
-  dateOfBirth?: Date;
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

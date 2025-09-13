@@ -39,7 +39,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         username: 'postgres',
         password: '12345',
         database: 'MedLink',
-        entities: [],
+        entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: true,
       }),
     }),

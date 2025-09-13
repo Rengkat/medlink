@@ -6,6 +6,8 @@ import {
   MinLength,
   IsDateString,
   IsPhoneNumber,
+  IsNotEmpty,
+  IsBoolean,
 } from 'class-validator';
 
 import { UserRole } from 'src/common/user-role.enum';
@@ -29,11 +31,13 @@ export class CreateUserDto {
   @IsEnum(UserRole, { message: 'Role must be a valid value' })
   role: UserRole;
 
-  @IsOptional()
-  @IsPhoneNumber() // Uses libphonenumber-js validation
-  phone?: string;
+  @IsNotEmpty()
+  phone: string;
 
   @IsOptional()
-  @IsDateString() // Expects an ISO 8601 date string (e.g., "2023-10-27")
   dateOfBirth?: Date;
+
+  @IsBoolean()
+  @IsOptional()
+  isActive?: boolean;
 }
