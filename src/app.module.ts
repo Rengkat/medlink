@@ -12,10 +12,40 @@ import { InpatientModule } from './inpatient/inpatient.module';
 import { TelemedicineModule } from './telemedicine/telemedicine.module';
 import { AdminModule } from './admin/admin.module';
 import { NotificationsModule } from './notifications/notifications.module';
-
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 @Module({
-  imports: [UserModule, PatientsModule, AppointmentsModule, VisitsModule, AuthModule, RecordsModule, BillingModule, InpatientModule, TelemedicineModule, AdminModule, NotificationsModule],
+  imports: [
+    UserModule,
+    PatientsModule,
+    AppointmentsModule,
+    VisitsModule,
+    AuthModule,
+    RecordsModule,
+    BillingModule,
+    InpatientModule,
+    TelemedicineModule,
+    AdminModule,
+    NotificationsModule,
+    //For TypeORM
+    TypeOrmModule.forRootAsync({
+      imports: [],
+      inject: [],
+      //Configure DB
+      useFactory: () => ({
+        type: 'postgres',
+        host: 'localhost',
+        port: 5432,
+        username: 'postgres',
+        password: '12345',
+        database: 'MedLink',
+        entities: [],
+        synchronize: true,
+      }),
+    }),
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}
+//07075563572
