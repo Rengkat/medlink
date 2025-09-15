@@ -4,9 +4,9 @@ export class CustomException extends HttpException {
   constructor(
     message: string,
     status: HttpStatus,
-    public detsils?: any,
+    public details?: any,
   ) {
     super(message, status);
-    this.detsils = detsils;
+    this.details = details;
   }
 }
