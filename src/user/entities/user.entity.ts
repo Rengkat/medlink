@@ -14,16 +14,16 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ type: 'varchar', length: 100, nullable: false })
   firstName: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 100, nullable: false })
   lastName: string;
 
-  @Column({ unique: true })
+  @Column({ unique: true, nullable: false })
   email: string;
 
-  @Column()
+  @Column({ type: 'varchar', nullable: false })
   password: string;
 
   @Column({
