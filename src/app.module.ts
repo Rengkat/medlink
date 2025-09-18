@@ -14,7 +14,6 @@ import { AdminModule } from './admin/admin.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { BcryptProvider } from './provider/bcrypt.provider/bcrypt.provider';
 @Module({
   imports: [
     UserModule,
@@ -46,7 +45,6 @@ import { BcryptProvider } from './provider/bcrypt.provider/bcrypt.provider';
     }),
   ],
   controllers: [AppController],
-  providers: [AppService, BcryptProvider],
+  providers: [AppService],
 })
 export class AppModule {}
-//07075563572

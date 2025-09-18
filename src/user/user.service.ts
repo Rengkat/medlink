@@ -1,8 +1,3 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -10,6 +5,10 @@ import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
+import { Injectable } from '@nestjs/common';
+import { ConflictException } from 'src/common/exceptions/conflict.exception';
+import { InternalServerErrorException } from 'src/common/exceptions/internal-server-error.exception';
+import { NotFoundException } from 'src/common/exceptions/not-found.exception';
 
 @Injectable()
 export class UserService {
@@ -19,36 +18,47 @@ export class UserService {
   ) {}
 
   public async create(createUserDto: CreateUserDto): Promise<User> {
-    // 1. Check for existing user
-    const existingUser = await this.userRepository.findOne({
-      where: { email: createUserDto.email },
-    });
-    if (existingUser) {
-      throw new ConflictException('User with this email already exists');
+    try {
+      // 1. Check for existing user
+      const existingUser = await this.userRepository.findOne({
+        where: { email: createUserDto.email },
+      });
+      if (existingUser) {
+        throw new ConflictException('User with this email already exists', {
+          email: createUserDto.email,
+        });
+      }
+
+      // 2. Hash the password
+      const saltRounds = 12;
+      const hashedPassword = await bcrypt.hash(
+        createUserDto.password,
+        saltRounds,
+      );
+
+      // 3. Create and save the new user
+      const newUser = this.userRepository.create({
+        ...createUserDto,
+        password: hashedPassword,
+      });
+
+      // 4. Remove the passwordHash from the response for security
+      const savedUser = await this.userRepository.save(newUser);
+      const { password, ...userWithoutPassword } = savedUser;
+      return userWithoutPassword as User;
+    } catch (error) {
+      if (error instanceof ConflictException) {
+        throw error; // Re-throw our custom exceptions
+      }
+      throw new InternalServerErrorException('Failed to create user', {
+        originalError: error.message,
+      });
     }
-
-    // 2. Hash the password
-    const saltRounds = 12;
-    const hashedPassword = await bcrypt.hash(
-      createUserDto.password,
-      saltRounds,
-    );
-
-    // 3. Create and save the new user
-    const newUser = this.userRepository.create({
-      ...createUserDto,
-      password: hashedPassword,
-    });
-
-    // 4. Remove the passwordHash from the response for security
-    const savedUser = await this.userRepository.save(newUser);
-    const { password, ...userWithoutPassword } = savedUser;
-    return userWithoutPassword as User;
   }
 
   async findAll(): Promise<Omit<User, 'password'>[]> {
     const users = await this.userRepository.find();
-    // It's good practice to remove sensitive data when returning all users
+    // remove sensitive data when returning all users
     return users.map(({ password, ...user }) => user);
   }
 
@@ -69,6 +79,29 @@ export class UserService {
       throw new NotFoundException('User with this ID does not exist');
     }
     return user;
+  }
+
+  async findForLogin(email: string): Promise<User | null> {
+    // This method MUST select the password field for validation
+    return this.userRepository.findOne({
+      where: { email },
+      select: [
+        'id',
+        'email',
+        'password',
+        'firstName',
+        'lastName',
+        'role',
+        'isActive',
+      ],
+    });
+  }
+
+  async validatePassword(
+    plainTextPassword: string,
+    hashedPassword: string,
+  ): Promise<boolean> {
+    return await bcrypt.compare(plainTextPassword, hashedPassword);
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
