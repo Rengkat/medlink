@@ -47,7 +47,7 @@ export class AuthService {
       throw error;
     }
   }
-
+  //activate
   validateUser() {
     return `This action returns all auth`;
   }
