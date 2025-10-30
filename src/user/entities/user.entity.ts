@@ -6,6 +6,7 @@ import {
   UpdateDateColumn,
   BeforeInsert,
   BeforeUpdate,
+  Index,
 } from 'typeorm';
 import { UserRole } from 'src/common/user-role.enum';
 
@@ -21,6 +22,7 @@ export class User {
   lastName: string;
 
   @Column({ unique: true, nullable: false })
+  @Index() // Add index for better performance
   email: string;
 
   @Column({ type: 'varchar', nullable: false })
@@ -34,6 +36,7 @@ export class User {
   role: UserRole;
 
   @Column({ nullable: false, unique: true })
+  @Index() // Add index for better performance
   phone: string;
 
   @Column({ type: 'date', nullable: true })
@@ -42,18 +45,29 @@ export class User {
   @Column({ default: true })
   isActive: boolean;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true, length: 255 }) 
   verificationToken: string | null;
 
-  @Column({ nullable: true, type: 'timestamp' })
+  @Column({ type: 'timestamptz', nullable: true }) 
   verificationTokenExpiry: Date | null;
 
   @Column({ default: false })
-  isVerify: boolean;
+  isVerified: boolean; 
 
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  get fullName(): string {
+    return `${this.firstName} ${this.lastName}`.trim();
+  }
+
+  isVerificationTokenValid(): boolean {
+    if (!this.verificationToken || !this.verificationTokenExpiry) {
+      return false;
+    }
+    return new Date() < this.verificationTokenExpiry;
+  }
 }

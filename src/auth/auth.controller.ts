@@ -33,20 +33,21 @@ export class AuthController {
 
   @Post('/login')
   login(@Body() user: LoginDto) {
-    return this.authService.login();
+    return this.authService.login(user.email, user.password);
   }
 
-  @Get()
+  @Get('/me')
   getCurrentUser() {}
 
-  @Post()
+  @Post('/forgot-password')
   forgotPassword() {}
 
-  @Post()
+  @Post('/reset-password')
   resetPassword() {}
 
-  @Post()
+  @Post('/logout')
   logout() {}
-  @Post()
+
+  @Post('')
   refreshToken() {}
 }

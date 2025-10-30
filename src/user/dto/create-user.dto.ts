@@ -14,17 +14,19 @@ import { UserRole } from 'src/common/user-role.enum';
 
 export class CreateUserDto {
   @IsString()
-  @MinLength(2, { message: 'First name is too short' })
+  @IsNotEmpty()
   firstName: string;
 
   @IsString()
-  @MinLength(2, { message: 'Last name is too short' })
+  @IsNotEmpty()
   lastName: string;
 
   @IsEmail()
+  @IsNotEmpty()
   email: string;
 
   @IsString()
+  @IsNotEmpty()
   @MinLength(8, { message: 'Password must be at least 8 characters long' })
   password: string;
 

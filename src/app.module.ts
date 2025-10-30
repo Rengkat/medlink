@@ -14,6 +14,12 @@ import { AdminModule } from './admin/admin.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { DoctorsModule } from './doctors/doctors.module';
+import { StaffModule } from './staff/staff.module';
+import { NursesModule } from './nurses/nurses.module';
+import { PharmacistsModule } from './pharmacists/pharmacists.module';
+import { LabTechniciansModule } from './lab-technicians/lab-technicians.module';
+import { AccountantsModule } from './accountants/accountants.module';
 @Module({
   imports: [
     UserModule,
@@ -43,6 +49,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         synchronize: true,
       }),
     }),
+    DoctorsModule,
+    StaffModule,
+    NursesModule,
+    PharmacistsModule,
+    LabTechniciansModule,
+    AccountantsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

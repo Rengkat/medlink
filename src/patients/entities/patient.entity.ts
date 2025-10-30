@@ -21,11 +21,30 @@ export class Patient extends User {
     phone: string;
   };
 
+  @Column({ type: 'jsonb', nullable: true })
+  insuranceInfo: {
+    provider: string;
+    policyNumber: string;
+    groupNumber: string;
+  };
+
   @Column({ type: 'varchar', nullable: true })
   activationSecretHash: string;
 
   @Column({ default: false })
   isOnlineAccessActive: boolean;
+
+  // @OneToMany(() => MedicalRecord, (record) => record.patient)
+  // medicalRecords: MedicalRecord[];
+
+  // @OneToMany(() => Appointment, (appointment) => appointment.patient)
+  // appointments: Appointment[];
+
+  @Column({ type: 'jsonb', default: {} })
+  allergies: string[];
+
+  @Column({ type: 'jsonb', default: {} })
+  currentMedications: string[];
 
   @BeforeInsert()
   @BeforeUpdate()
