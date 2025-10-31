@@ -20,6 +20,7 @@ import { NursesModule } from './nurses/nurses.module';
 import { PharmacistsModule } from './pharmacists/pharmacists.module';
 import { LabTechniciansModule } from './lab-technicians/lab-technicians.module';
 import { AccountantsModule } from './accountants/accountants.module';
+const ENV = process.env.NODE_ENV || 'development';
 @Module({
   imports: [
     UserModule,
@@ -33,21 +34,26 @@ import { AccountantsModule } from './accountants/accountants.module';
     TelemedicineModule,
     AdminModule,
     NotificationsModule,
+    ConfigModule.forRoot({
+      isGlobal: true, // Make ConfigModule global
+      envFilePath: !ENV ? `.env` : `.env.${ENV.trim()}`, // Load environment variables from .env file based on the current environment
+    }),
     //For TypeORM
     TypeOrmModule.forRootAsync({
-      imports: [],
-      inject: [],
+      imports: [ConfigModule],
+      inject: [ConfigService],
       //Configure DB
-      useFactory: () => ({
-        type: 'postgres',
-        host: 'localhost',
-        port: 5432,
-        username: 'postgres',
-        password: '12345',
-        database: 'MedLink',
-        entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: true,
-      }),
+      useFactory: (configService: ConfigService) =>
+        ({
+          type: 'postgres',
+          host: 'localhost',
+          port: 5432,
+          username: 'postgres',
+          password: '12345',
+          database: 'MedLink',
+          entities: [__dirname + '/**/*.entity{.ts,.js}'],
+          synchronize: true,
+        }) as any,
     }),
     DoctorsModule,
     StaffModule,
@@ -60,3 +66,18 @@ import { AccountantsModule } from './accountants/accountants.module';
   providers: [AppService],
 })
 export class AppModule {}
+
+// useFactory: (configService: ConfigService) =>
+//   ({
+//     autoLoadEntities: true,
+//     logging: true,
+//     type: configService.get('DB_TYPE'),
+//     host: configService.get('DB_HOST'),
+//     port: +configService.get('PORT'),
+//     username: configService.get('DB_USERNAME'),
+//     password: configService.get('DB_PASSWORD'),
+//     database: configService.get('DB_NAME'),
+//     entities: [__dirname + '/**/*.entity{.ts,.js}'],
+//     synchronize: configService.get('SYNC_DB'),
+//   }) as any,
+// }),

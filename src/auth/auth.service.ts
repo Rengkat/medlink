@@ -4,12 +4,18 @@ import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { NotFoundException } from 'src/common/exceptions/not-found.exception';
 import { UnauthorizedException } from 'src/common/exceptions/unauthorized.exception';
 import * as bcrypt from 'bcrypt';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly configService: ConfigService,
+  ) {}
 
   async register(createUserDto: CreateUserDto) {
+    const env = this.configService.get('NODE_ENV');
+    console.log(env);
     try {
       const user = await this.userService.create(createUserDto);
 
