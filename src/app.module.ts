@@ -20,6 +20,8 @@ import { NursesModule } from './nurses/nurses.module';
 import { PharmacistsModule } from './pharmacists/pharmacists.module';
 import { LabTechniciansModule } from './lab-technicians/lab-technicians.module';
 import { AccountantsModule } from './accountants/accountants.module';
+import databaseConfig from './config/database.config';
+import appConfig from './config/app.config';
 const ENV = process.env.NODE_ENV || 'development';
 @Module({
   imports: [
@@ -37,6 +39,7 @@ const ENV = process.env.NODE_ENV || 'development';
     ConfigModule.forRoot({
       isGlobal: true, // Make ConfigModule global
       envFilePath: !ENV ? `.env` : `.env.${ENV.trim()}`, // Load environment variables from .env file based on the current environment
+      load: [databaseConfig, appConfig],
     }),
     //For TypeORM
     TypeOrmModule.forRootAsync({
@@ -45,14 +48,15 @@ const ENV = process.env.NODE_ENV || 'development';
       //Configure DB
       useFactory: (configService: ConfigService) =>
         ({
-          type: 'postgres',
-          host: 'localhost',
-          port: 5432,
-          username: 'postgres',
-          password: '12345',
-          database: 'MedLink',
+          type: configService.get('database.type'),
+          host: configService.get('database.host'),
+          port: configService.get('database.port'),
+          username: configService.get('database.username'),
+          password: configService.get('databse.password'),
+          database: configService.get('database.database'),
           entities: [__dirname + '/**/*.entity{.ts,.js}'],
-          synchronize: true,
+          synchronize: configService.get('database.synchronize'),
+          autoLoadEntities: configService.get('databse.autoLoadEntities'),
         }) as any,
     }),
     DoctorsModule,
@@ -66,18 +70,3 @@ const ENV = process.env.NODE_ENV || 'development';
   providers: [AppService],
 })
 export class AppModule {}
-
-// useFactory: (configService: ConfigService) =>
-//   ({
-//     autoLoadEntities: true,
-//     logging: true,
-//     type: configService.get('DB_TYPE'),
-//     host: configService.get('DB_HOST'),
-//     port: +configService.get('PORT'),
-//     username: configService.get('DB_USERNAME'),
-//     password: configService.get('DB_PASSWORD'),
-//     database: configService.get('DB_NAME'),
-//     entities: [__dirname + '/**/*.entity{.ts,.js}'],
-//     synchronize: configService.get('SYNC_DB'),
-//   }) as any,
-// }),
