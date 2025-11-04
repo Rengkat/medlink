@@ -1,26 +1,30 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { NotFoundException } from 'src/common/exceptions/not-found.exception';
 import { UnauthorizedException } from 'src/common/exceptions/unauthorized.exception';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 import { ConfigService } from '@nestjs/config';
+import type { ConfigType } from '@nestjs/config';
+import authConfig from './config/auth.config';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly userService: UserService,
-    private readonly configService: ConfigService,
+    @Inject(authConfig.KEY)
+    private readonly authConfiguration: ConfigType<typeof authConfig>,
+    private readonly jwtService: JwtService,
   ) {}
 
   async register(createUserDto: CreateUserDto) {
-    const env = this.configService.get('NODE_ENV');
-    console.log(env);
     try {
       const user = await this.userService.create(createUserDto);
 
-      // Generate a verification token and send a verification email here
-      // will implement this part
+      // TODO: Send verification email
+      // await this.sendVerificationEmail(user.email, verificationToken);
       const verificationToken = this.generateVerificationToken();
       const tokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
@@ -143,7 +147,7 @@ export class AuthService {
       const tokenExpiry = new Date(Date.now() + 1 * 60 * 60 * 1000); // 1 hour
 
       await this.userService.updateUserByEmail(email, {
-        verificationToken: resetToken, // Reusing verificationToken for reset
+        verificationToken: resetToken,
         verificationTokenExpiry: tokenExpiry,
       });
 
@@ -177,7 +181,7 @@ export class AuthService {
       // Hash new password and update user
       const hashedPassword = await bcrypt.hash(newPassword, 12);
 
-      const updatedUser = await this.userService.updateUserByEmail(email, {
+      await this.userService.updateUserByEmail(email, {
         password: hashedPassword,
         verificationToken: null,
         verificationTokenExpiry: null,
@@ -195,21 +199,26 @@ export class AuthService {
     return { message: 'Logged out successfully' };
   }
 
-  refreshToken() {
-    // Implement token refresh logic
+  async refreshToken() {
+    // first decode it
+    // const payload = await this.jwtService.verifyAsync(this.refreshToken, {
+    //   secret: this.authConfiguration.refreshTokenSecret,
+    // });
+    //now find user using the ID from the payload
+    const user = await this.userService.findOneById(payload.sub);
     // This would typically validate a refresh token and issue a new access token
     throw new Error('Method not implemented');
   }
 
   // Helper methods
   private generateVerificationToken(): string {
-    // Generate a random token (in real app, use crypto)
-    return Math.random().toString(36).substring(2) + Date.now().toString(36);
+    // Generate a random verification token
+    return crypto.randomBytes(32).toString('hex');
   }
 
   private generateResetToken(): string {
     // Generate a random reset token
-    return Math.random().toString(36).substring(2) + Date.now().toString(36);
+    return crypto.randomBytes(32).toString('hex');
   }
 
   private generateJwtToken(user: any): string {
