@@ -1,82 +1,79 @@
-// import { ExtractJwt, Strategy } from 'passport-jwt';
-// import { PassportStrategy } from '@nestjs/passport';
-// import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
-// import { ConfigService } from '@nestjs/config';
-// import { UserService } from '../../user/user.service';
-// import { UserRole } from '../../../common/enums/user-role.enum';
+import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { PassportStrategy } from '@nestjs/passport';
+import { ExtractJwt, Strategy } from 'passport-jwt';
+import { UserRole } from 'src/common/enums/user-role.enum';
+import { UnauthorizedException } from 'src/common/exceptions/unauthorized.exception';
+import { UserService } from 'src/user/user.service';
 
-// export interface JwtPayload {
-//   sub: number;
-//   email: string;
-//   role: UserRole;
-//   iat?: number;
-//   exp?: number;
-// }
+export interface JwtPayload {
+  sub: number;
+  email: string;
+  role: UserRole;
+  iat?: number;
+  exp?: number;
+}
 
-// export interface RequestUser {
-//   id: number;
-//   email: string;
-//   role: UserRole;
-//   firstName: string;
-//   lastName: string;
-//   isActive: boolean;
-// }
+export interface RequestUser {
+  id: number;
+  email: string;
+  role: UserRole;
+  firstName: string;
+  lastName: string;
+  isActive: boolean;
+}
 
-// @Injectable()
-// export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
-//   private readonly logger = new Logger(JwtStrategy.name);
+@Injectable()
+export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
+  //   private readonly logger = new Logger(JwtStrategy.name);
 
-//   constructor(
-//     private configService: ConfigService,
-//     private userService: UserService,
-//     // private authConfig:
-//   ) {
-//     super({
-//       jwtFromRequest: ExtractJwt.fromExtractors([
-//         ExtractJwt.fromAuthHeaderAsBearerToken(),
-//         ExtractJwt.fromUrlQueryParameter('token'),
-//       ]),
-//       ignoreExpiration: false,
-//       secretOrKey: configService.get<string>('JWT_SECRET'),
-//       passReqToCallback: true,
-//     });
-//   }
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly userService: UserService,
+  ) {
+    super({
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        ExtractJwt.fromAuthHeaderAsBearerToken(),
+        ExtractJwt.fromUrlQueryParameter('token'),
+      ]),
+      ignoreExpiration: false,
+      secretOrKey: configService.get<string>('auth.jwtSecret'),
+      audience: configService.get<string>('auth.jwtTokenAudience'),
+      issuer: configService.get<string>('auth.jwtTokenIssuer'),
+      passReqToCallback: true,
+    } as any);
+  }
 
-//   async validate(request: any, payload: JwtPayload): Promise<RequestUser> {
-//     try {
-//       // Validate payload structure
-//       if (!payload.sub || !payload.email || !payload.role) {
-//         throw new UnauthorizedException('Invalid token payload');
-//       }
+  async validate(_request: any, payload: JwtPayload): Promise<RequestUser> {
+    try {
+      if (!payload.sub || !payload.email || !payload.role) {
+        throw new UnauthorizedException('Invalid token payload');
+      }
 
-//       // Find user in database
-//       const user = await this.userService.findOneById(payload.sub);
+      const user = await this.userService.findOneById(payload.sub);
+      if (!user) {
+        throw new UnauthorizedException('User not found');
+      }
 
-//       if (!user) {
-//         throw new UnauthorizedException('User not found');
-//       }
+      if (!user.isActive) {
+        throw new UnauthorizedException('User account is deactivated');
+      }
 
-//       if (!user.isActive) {
-//         throw new UnauthorizedException('User account is deactivated');
-//       }
+      if (user.email !== payload.email) {
+        throw new UnauthorizedException('Token email mismatch');
+      }
 
-//       // Verify token email matches user email
-//       if (user.email !== payload.email) {
-//         throw new UnauthorizedException('Token email mismatch');
-//       }
-
-//       // Return user data that will be available in req.user
-//       return {
-//         id: user.id,
-//         email: user.email,
-//         role: user.role,
-//         firstName: user.firstName,
-//         lastName: user.lastName,
-//         isActive: user.isActive,
-//       };
-//     } catch (error) {
-//       this.logger.error(`JWT Validation failed: ${error.message}`, error.stack);
-//       throw error;
-//     }
-//   }
-// }
+      return {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        isActive: user.isActive,
+      };
+    } catch (error) {
+      //   this.logger.error(`JWT validation failed: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+}
