@@ -45,14 +45,14 @@ export class User {
   @Column({ default: true })
   isActive: boolean;
 
-  @Column({ type: 'varchar', nullable: true, length: 255 }) 
+  @Column({ type: 'varchar', nullable: true, length: 255 })
   verificationToken: string | null;
 
-  @Column({ type: 'timestamptz', nullable: true }) 
+  @Column({ type: 'timestamptz', nullable: true })
   verificationTokenExpiry: Date | null;
 
   @Column({ default: false })
-  isVerified: boolean; 
+  isVerified: boolean;
 
   @CreateDateColumn()
   createdAt: Date;

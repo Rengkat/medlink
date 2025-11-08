@@ -23,6 +23,9 @@ import { AccountantsModule } from './accountants/accountants.module';
 import databaseConfig from './config/database.config';
 import appConfig from './config/app.config';
 import authConfig from './auth/config/auth.config';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.gaurd';
+import { RolesGuard } from './auth/guards/role.guard';
 
 const ENV = process.env.NODE_ENV || 'development';
 
@@ -68,6 +71,14 @@ const ENV = process.env.NODE_ENV || 'development';
     AccountantsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    //Global guard can be added here
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+    { provide: APP_GUARD, useClass: RolesGuard },
+  ],
 })
 export class AppModule {}
