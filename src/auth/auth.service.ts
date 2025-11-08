@@ -205,7 +205,7 @@ export class AuthService {
     //   secret: this.authConfiguration.refreshTokenSecret,
     // });
     //now find user using the ID from the payload
-    const user = await this.userService.findOneById(payload.sub);
+    // const user = await this.userService.findOneById(payload.sub);
     // This would typically validate a refresh token and issue a new access token
     throw new Error('Method not implemented');
   }

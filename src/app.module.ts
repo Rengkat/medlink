@@ -42,7 +42,7 @@ const ENV = process.env.NODE_ENV || 'development';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: !ENV ? '.env' : `.env.${ENV.trim()}`,
-      load: [databaseConfig, appConfig, authConfig], // Added authConfig
+      load: [databaseConfig, appConfig, authConfig],
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
