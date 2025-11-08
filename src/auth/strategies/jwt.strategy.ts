@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { UserRole } from 'src/common/enums/user-role.enum';
+import { NotFoundException } from 'src/common/exceptions/not-found.exception';
 import { UnauthorizedException } from 'src/common/exceptions/unauthorized.exception';
 import { UserService } from 'src/user/user.service';
 
@@ -52,7 +53,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 
       const user = await this.userService.findOneById(payload.sub);
       if (!user) {
-        throw new UnauthorizedException('User not found');
+        throw new NotFoundException('User not found');
       }
 
       if (!user.isActive) {

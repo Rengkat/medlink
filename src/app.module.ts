@@ -60,7 +60,7 @@ const ENV = process.env.NODE_ENV || 'development';
           database: configService.get('database.database'),
           entities: [__dirname + '/**/*.entity{.ts,.js}'],
           synchronize: configService.get('database.synchronize'),
-          autoLoadEntities: configService.get('database.autoLoadEntities'), // Fixed typo
+          autoLoadEntities: configService.get('database.autoLoadEntities'),
         }) as any,
     }),
     DoctorsModule,
